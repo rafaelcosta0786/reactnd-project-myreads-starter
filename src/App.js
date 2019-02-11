@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom'
 
 import Shelf from './Shelf'
 import Search from './Search'
@@ -33,10 +33,13 @@ class BooksApp extends React.Component {
       let booksObj = Object.values(this.state).reduce((rVal, current) => rVal.concat(current), []).reduce((rVal, current) => {
         rVal[current.id] = current;
         return rVal;
-      }, {})
+      }, {});
+      if (books && books.error){
+        books = [];
+      } 
       this.setState({
         result: (books || []).map((book) => {
-          (booksObj[book.id] && (book.shelf = booksObj[book.id].shelf)) || (book.shelf = 'none')
+            (booksObj[book.id] && (book.shelf = booksObj[book.id].shelf)) || (book.shelf = 'none')
           return book;
         })
       })
@@ -51,29 +54,40 @@ class BooksApp extends React.Component {
     })
 
   render() {
+    const NoMatch = ({ location }) => (
+      <div>
+        <h3>No match for <code>{location.pathname}</code></h3>
+      </div>
+    )
     return (
       <div className="app">
-        <Route exact path="/" render={() => (
-          <div className="list-books">
-            <div className="list-books-title">
-              <h1>My Reads Labs</h1>
-            </div>
-            <div className="list-books-content">
-              <div>
-                <Shelf id="currentlyReading" name="Currently Reading" listBook={this.state.currentlyReading} onChangeShelve={this.onChangeShelve} />
-                <Shelf id="wantToRead" name="Want to Read" listBook={this.state.wantToRead} onChangeShelve={this.onChangeShelve} />
-                <Shelf id="read" name="Read" listBook={this.state.read} onChangeShelve={this.onChangeShelve} />
+        <Router>
+          <Switch>
+            <Route exact path="/" render={() => (
+              <div className="list-books">
+                <div className="list-books-title">
+                  <h1>My Reads Labs</h1>
+                </div>
+                <div className="list-books-content">
+                  <div>
+                    <Shelf id="currentlyReading" name="Currently Reading" listBook={this.state.currentlyReading} onChangeShelve={this.onChangeShelve} />
+                    <Shelf id="wantToRead" name="Want to Read" listBook={this.state.wantToRead} onChangeShelve={this.onChangeShelve} />
+                    <Shelf id="read" name="Read" listBook={this.state.read} onChangeShelve={this.onChangeShelve} />
+                  </div>
+                </div>
+                <div className="open-search">
+                  <Link to="/search"><div className="book-add"></div></Link>
+                </div>
               </div>
-            </div>
-            <div className="open-search">
-              <Link to="/search"><div className="book-add"></div></Link>
-            </div>
-          </div>
-        )} />
+            )} />
 
-        <Route path="/search" render={() =>
-          <Search result={this.state.result} onChangeShelve={this.onChangeShelve} search={this.search} />
-        } />
+            <Route path="/search" render={() =>
+              <Search result={this.state.result} onChangeShelve={this.onChangeShelve} search={this.search} />
+            } />
+
+            <Route component={NoMatch} />
+          </Switch>
+        </Router>
       </div>
     )
   }

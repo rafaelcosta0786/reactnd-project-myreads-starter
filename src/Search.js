@@ -1,8 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import Book from './Book'
+import PropTypes from 'prop-types';
 
-const Search = (props) =>
+const Search = (props) => {
+  return (
       <div className="search-books">
         <div className="search-books-bar">
           <Link className="close-search" to="/">Close</Link>
@@ -18,6 +20,11 @@ const Search = (props) =>
           </ol>
         </div>
       </div>
+      );
+};
 
-
+Search.propTypes = {
+  result: PropTypes.array,
+  onChangeShelve: PropTypes.func.isRequired
+}
 export default Search
