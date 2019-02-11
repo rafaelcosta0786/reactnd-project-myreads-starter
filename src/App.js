@@ -3,12 +3,19 @@ import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom'
 
 import Shelf from './Shelf'
 import Search from './Search'
+import { debounce } from "throttle-debounce";
 
 import * as BooksAPI from './BooksAPI'
 import './App.css'
 
 
 class BooksApp extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.autocompleteSearchThrottled = debounce(500, this.executeSearch);
+  }
+
   state = {
     result: [],
     currentlyReading: [],
@@ -28,18 +35,24 @@ class BooksApp extends React.Component {
     return returnValue
   }, {})
 
-  search = (term) =>
+
+  search = term => {
+    this.autocompleteSearchThrottled(term);
+  };
+
+  executeSearch = (term) =>
     BooksAPI.search(term).then((books) => {
+      console.log('>>', books);
       let booksObj = Object.values(this.state).reduce((rVal, current) => rVal.concat(current), []).reduce((rVal, current) => {
         rVal[current.id] = current;
         return rVal;
       }, {});
-      if (books && books.error){
+      if (books && books.error) {
         books = [];
-      } 
+      }
       this.setState({
         result: (books || []).map((book) => {
-            (booksObj[book.id] && (book.shelf = booksObj[book.id].shelf)) || (book.shelf = 'none')
+          (booksObj[book.id] && (book.shelf = booksObj[book.id].shelf)) || (book.shelf = 'none')
           return book;
         })
       })
